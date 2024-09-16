@@ -6,6 +6,7 @@ namespace API_Aggregation.Services
 {
     public class FoodService : IFoodService
     {
+    
         private readonly HttpClient _httpClient;
         private readonly ILogger<FoodService> _logger;
         private const string FoodApiUrl = "https://world.openfoodfacts.org/api/v0/search?search_terms=food&fields=code,name,ingredients_text,nutrition_grades_tags,image_url&sort_by=popularity&order_by=desc";
@@ -22,16 +23,20 @@ namespace API_Aggregation.Services
             {
                 // Fetch food data from API
                 var foodResponse = await _httpClient.GetAsync(FoodApiUrl);
+
                 if (!foodResponse.IsSuccessStatusCode)
                 {
-                    _logger.LogError($"Failed to fetch food data: {foodResponse.StatusCode}");
-                    throw new HttpRequestException($"Failed to fetch food data. StatusCode: {foodResponse.StatusCode}");
+                    // Log detailed error information
+                    _logger.LogError($"Failed to fetch food data from {FoodApiUrl}: StatusCode {foodResponse.StatusCode}");
+                    // Optionally, return fallback data
+                    return GetFallbackFoodResults();
                 }
 
                 var foodContent = await foodResponse.Content.ReadAsStringAsync();
                 _logger.LogInformation($"Food data response: {foodContent}");
 
                 var foodData = await foodResponse.Content.ReadFromJsonAsync<FoodApiResponse>();
+
                 var limitedFoodResults = foodData?.Products?.Take(5).Select(p => new FoodResult
                 {
                     Code = p.Code,
@@ -44,10 +49,31 @@ namespace API_Aggregation.Services
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError($"Error fetching food data: {ex.Message}");
-                throw; // Throw or handle based on your application's needs
+                _logger.LogError($"Error fetching food data from {FoodApiUrl}: {ex.Message}");
+                // Optionally, return fallback data
+                return GetFallbackFoodResults();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Unexpected error fetching food data from {FoodApiUrl}: {ex.Message}");
+                // Optionally, return fallback data
+                return GetFallbackFoodResults();
             }
         }
-    }
 
+        private List<FoodResult> GetFallbackFoodResults()
+        {
+            // Provide a set of default data or an empty list
+            return new List<FoodResult>
+            {
+                new FoodResult
+                {
+                    Code = "Fallback",
+                    Image_Url = "https://via.placeholder.com/150",
+                    ingredients_text = "No data available",
+                    nutrition_grades_tags = new List<string> { "unknown" }
+                }
+            };
+        }
+    }
 }

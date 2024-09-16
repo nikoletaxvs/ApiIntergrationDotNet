@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using static API_Aggregation.Models.AggregatedData;
 using API_Aggregation.Services;
+using static API_Aggregation.Models.Food;
+using static API_Aggregation.Models.Population;
+using static API_Aggregation.Models.Spotify.SpotifySearch;
 
 
 namespace API_Aggregation.Controllers
@@ -22,7 +25,14 @@ namespace API_Aggregation.Controllers
         }
 
         [HttpGet("data")]
-        public async Task<IActionResult> GetAggregatedData()
+        public async Task<IActionResult> GetAggregatedData(string populationSortBy = "year",
+            string populationFilterByYear = null,
+            string foodSortBy = "nutrition_grade",
+            string foodFilterByNutritionGrade = null,
+            string catSortBy = "name",
+            string catFilterByOrigin = null,
+            string spotifySortBy = "popularity",
+            string spotifyFilterByPopularity = null)
         {
             try
             {
@@ -32,13 +42,14 @@ namespace API_Aggregation.Controllers
                 // Fetch food data using the service
                 var foodResults = await _foodService.GetFoodDataAsync();
 
-                //Fetch cat breed data using the service
+                //Fetch catTask breed data using the service
                 var catResults = await _catService.GetCatBreedsAsync();
 
                 //Fetch spotify data
                 var spotifyResults = await _spotifyService.GetSpotifyList();
+               
 
-                // Create the aggregated result
+                // Aggregate results
                 var aggregatedResult = new AggregatedResult
                 {
                     Population = populationResults,

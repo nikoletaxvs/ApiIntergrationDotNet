@@ -20,10 +20,13 @@ namespace API_Aggregation.Services
             {
                 // Fetch cat breeds data from The Cat API
                 var catBreedResponse = await _httpClient.GetAsync(CatApiUrl);
+
                 if (!catBreedResponse.IsSuccessStatusCode)
                 {
-                    _logger.LogError($"Failed to fetch cat breed data: {catBreedResponse.StatusCode}");
-                    throw new HttpRequestException($"Failed to fetch cat breed data. StatusCode: {catBreedResponse.StatusCode}");
+                    // Log detailed error information
+                    _logger.LogError($"Failed to fetch cat breed data from {CatApiUrl}: StatusCode {catBreedResponse.StatusCode}");
+                    // Optionally, return default fallback data
+                    return GetFallbackCatBreeds();
                 }
 
                 var catBreedContent = await catBreedResponse.Content.ReadAsStringAsync();
@@ -45,9 +48,25 @@ namespace API_Aggregation.Services
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError($"Error fetching cat breed data: {ex.Message}");
-                throw; // You can decide to return default data or rethrow the exception depending on your use case
+                _logger.LogError($"Error fetching cat breed data from {CatApiUrl}: {ex.Message}");
+                // Optionally, return default fallback data
+                return GetFallbackCatBreeds();
             }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Unexpected error fetching cat breed data from {CatApiUrl}: {ex.Message}");
+                // Optionally, return default fallback data
+                return GetFallbackCatBreeds();
+            }
+        }
+
+        private List<CatBreedResult> GetFallbackCatBreeds()
+        {
+            // Provide a set of default data or an empty list
+            return new List<CatBreedResult>
+            {
+                new CatBreedResult { Name = "Fallback Breed", Origin = "Unknown", Temperament = "Unknown", LifeSpan = "Unknown", Description = "No data available" }
+            };
         }
     }
 }

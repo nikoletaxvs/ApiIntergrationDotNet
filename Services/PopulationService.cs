@@ -20,16 +20,20 @@ namespace API_Aggregation.Services
             {
                 // Fetch population data from API
                 var populationResponse = await _httpClient.GetAsync(PopulationApiUrl);
+
                 if (!populationResponse.IsSuccessStatusCode)
                 {
-                    _logger.LogError($"Failed to fetch population data: {populationResponse.StatusCode}");
-                    throw new HttpRequestException($"Failed to fetch population data. StatusCode: {populationResponse.StatusCode}");
+                    // Log detailed error information
+                    _logger.LogError($"Failed to fetch population data from {PopulationApiUrl}: StatusCode {populationResponse.StatusCode}");
+                    // Optionally, return fallback data
+                    return GetFallbackPopulationResults();
                 }
 
                 var populationContent = await populationResponse.Content.ReadAsStringAsync();
                 _logger.LogInformation($"Population data response: {populationContent}");
 
                 var populationData = await populationResponse.Content.ReadFromJsonAsync<PopulationApiResponse>();
+
                 var limitedPopulationResults = populationData?.Data?.Take(5).Select(p => new PopulationResult
                 {
                     Nation = p.Nation,
@@ -41,10 +45,32 @@ namespace API_Aggregation.Services
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError($"Error fetching population data: {ex.Message}");
-                throw; // You may throw the error or return a default value based on your use case
+                _logger.LogError($"Error fetching population data from {PopulationApiUrl}: {ex.Message}");
+                // Optionally, return fallback data
+                return GetFallbackPopulationResults();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Unexpected error fetching population data from {PopulationApiUrl}: {ex.Message}");
+                // Optionally, return fallback data
+                return GetFallbackPopulationResults();
             }
         }
+
+        private List<PopulationResult> GetFallbackPopulationResults()
+        {
+            // Provide a set of default data or an empty list
+            return new List<PopulationResult>
+        {
+            new PopulationResult
+            {
+                Nation = "Fallback Nation",
+                Population = 0,
+                Year = DateTime.Now.Year.ToString()
+            }
+        };
+        }
     }
+
 
 }
