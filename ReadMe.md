@@ -1,4 +1,4 @@
-﻿# API Integration - .NET 8
+﻿# API - .NET 8
 
 ##### Table of Contents
 
