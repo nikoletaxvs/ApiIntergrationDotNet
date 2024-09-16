@@ -25,14 +25,7 @@ namespace API_Aggregation.Controllers
         }
 
         [HttpGet("data")]
-        public async Task<IActionResult> GetAggregatedData(string populationSortBy = "year",
-            string populationFilterByYear = null,
-            string foodSortBy = "nutrition_grade",
-            string foodFilterByNutritionGrade = null,
-            string catSortBy = "name",
-            string catFilterByOrigin = null,
-            string spotifySortBy = "popularity",
-            string spotifyFilterByPopularity = null)
+        public async Task<IActionResult> GetAggregatedData()
         {
             try
             {
