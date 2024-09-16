@@ -110,7 +110,7 @@ By centralizing these operations, `DashBoardController` simplifies client intera
 
 
 ###### Services
-- **SpotifyService**: **Implements `ISpotifyService`** to interact with the Spotify API using OAuth for authentication.
+- **SpotifyService**: Implements `ISpotifyService`** to interact with the Spotify API using OAuth for authentication.
 Handles token management, API requests, and provides search results for artists or songs.
 Includes advanced error handling and caching of tokens to optimize performance. 
 **If errors occur, it returns a fallback result.**
